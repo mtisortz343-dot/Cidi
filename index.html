@@ -7,7 +7,7 @@
 
 <style>
     :root {
-        --background: #f3f7f5;
+        --background: #AAF0C7;
         --card: #ffffff;
         --text: #17201c;
         --muted: #7b8580;
@@ -276,13 +276,14 @@
 
     .event {
         display: grid;
-        grid-template-columns: 45px 4px 1fr;
+        grid-template-columns: 45px 4px 1fr auto;
         align-items: center;
         gap: 10px;
         padding: 13px;
         border: 1px solid var(--border);
         border-radius: 13px;
         background: #fafcfb;
+        position: relative;
     }
 
     .event-time { color: var(--emerald); font-size: 11px; font-weight: 800; }
@@ -294,9 +295,64 @@
         background: var(--turquoise);
     }
 
-    .event-info { display: flex; flex-direction: column; gap: 3px; }
+    .event-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
     .event-info strong { font-size: 13px; }
     .event-info span { color: var(--muted); font-size: 11px; }
+
+    /* MENÚ DEL EVENTO (3 PUNTITOS) */
+    .event-menu-wrapper { position: relative; }
+
+    .event-menu-button {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+
+    .event-menu-button:hover { background: var(--border); color: var(--text); }
+
+    .event-menu-dropdown {
+        display: none;
+        position: absolute;
+        top: 32px;
+        right: 0;
+        min-width: 130px;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        z-index: 10;
+    }
+
+    .event-menu-dropdown.open { display: block; }
+
+    .event-menu-dropdown button {
+        display: block;
+        width: 100%;
+        padding: 10px 14px;
+        border: none;
+        background: white;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .event-menu-dropdown button:hover { background: var(--soft-emerald); }
+
+    .event-menu-dropdown button.delete-option {
+        color: #d64545;
+        border-top: 1px solid var(--border);
+    }
+
+    .event-menu-dropdown button.delete-option:hover { background: #fdeaea; }
 
     /* ADD EVENT */
     .add-event {
@@ -311,6 +367,126 @@
     }
 
     .add-event:hover { background: #d8f2e8; }
+
+    /* MODAL */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(23, 32, 28, 0.45);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 50;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-card {
+        width: min(420px, 100%);
+        background: var(--card);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .modal-header h3 { margin: 0; font-size: 18px; }
+
+    .modal-close {
+        border: none;
+        background: transparent;
+        font-size: 22px;
+        color: var(--muted);
+        line-height: 1;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    .modal-label input {
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    .modal-label input:focus {
+        outline: none;
+        border-color: var(--emerald);
+    }
+
+    .modal-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .time-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+    }
+
+    .time-inputs select {
+        padding: 10px 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-size: 14px;
+        background: white;
+    }
+
+    .time-inputs select:focus {
+        outline: none;
+        border-color: var(--emerald);
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .modal-cancel {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: white;
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .modal-cancel:hover { border-color: var(--emerald); color: var(--emerald); }
+
+    .modal-submit {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 10px;
+        background: var(--emerald);
+        color: white;
+        font-weight: 700;
+    }
+
+    .modal-submit:hover { background: var(--emerald-dark); }
 
     /* MOBILE */
     @media (max-width: 800px) {
@@ -396,6 +572,50 @@
     </main>
 </div>
 
+<!-- MODAL: NUEVO EVENTO -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="modalTitle">Nuevo evento</h3>
+            <button type="button" class="modal-close" id="modalCloseButton">×</button>
+        </div>
+
+        <form id="eventForm">
+            <label class="modal-label">
+                Título
+                <input type="text" id="eventTitleInput" placeholder="Ej. Reunión con el equipo" required>
+            </label>
+
+            <label class="modal-label">
+                Fecha
+                <input type="date" id="eventDateInput" required>
+            </label>
+
+            <label class="modal-label">
+                Hora
+                <div class="time-inputs">
+                    <select id="eventHourInput"></select>
+                    <select id="eventMinuteInput"></select>
+                    <select id="eventPeriodInput">
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+            </label>
+
+            <label class="modal-label">
+                Categoría
+                <input type="text" id="eventCategoryInput" placeholder="Ej. Trabajo, Personal...">
+            </label>
+
+            <div class="modal-actions">
+                <button type="button" class="modal-cancel" id="modalCancelButton">Cancelar</button>
+                <button type="submit" class="modal-submit" id="modalSubmitButton">Guardar evento</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     // ELEMENTOS
     const calendarGrid = document.getElementById("calendarGrid");
@@ -407,21 +627,89 @@
     const todayButton = document.getElementById("todayButton");
     const commandInput = document.getElementById("commandInput");
     const commandButton = document.getElementById("commandButton");
+    const commandDescription = document.querySelector(".command-description");
+    const addEventButton = document.getElementById("addEventButton");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const eventForm = document.getElementById("eventForm");
+    const eventTitleInput = document.getElementById("eventTitleInput");
+    const eventDateInput = document.getElementById("eventDateInput");
+    const eventHourInput = document.getElementById("eventHourInput");
+    const eventMinuteInput = document.getElementById("eventMinuteInput");
+    const eventPeriodInput = document.getElementById("eventPeriodInput");
+    const eventCategoryInput = document.getElementById("eventCategoryInput");
+    const modalCloseButton = document.getElementById("modalCloseButton");
+    const modalCancelButton = document.getElementById("modalCancelButton");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalSubmitButton = document.getElementById("modalSubmitButton");
+
+    // Se guarda el id del evento en edición; null cuando se está creando uno nuevo
+    let editingEventId = null;
+
+    // Llena los selects de hora (1-12) y minuto (00-55, cada 5)
+    for (let h = 1; h <= 12; h++) {
+        const option = document.createElement("option");
+        option.value = h;
+        option.textContent = h;
+        eventHourInput.appendChild(option);
+    }
+
+    for (let m = 0; m < 60; m += 5) {
+        const option = document.createElement("option");
+        const value = String(m).padStart(2, "0");
+        option.value = value;
+        option.textContent = value;
+        eventMinuteInput.appendChild(option);
+    }
+    const defaultCommandDescription = commandDescription.textContent;
 
     // FECHA ACTUAL
     const today = new Date();
     let currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     let selectedDate = new Date(today);
 
-    // EVENTOS DE PRUEBA
-    const events = [
+    // EVENTOS (persistidos en localStorage)
+    const STORAGE_KEY = "cidi-calendar-events";
+
+    function generateId() {
+        return (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+    }
+
+    // Evento de ejemplo, solo se usa si no hay nada guardado todavía
+    const defaultEvents = [
         {
+            id: generateId(),
             date: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
             time: "18:00",
             title: "Diseñar Cidi Calendar",
             category: "Proyecto personal"
         }
     ];
+
+    function loadEvents() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+
+        if (!raw) return defaultEvents;
+
+        try {
+            const parsed = JSON.parse(raw);
+            // Las fechas se guardan como texto (ISO), hay que reconvertirlas a Date
+            // y se asigna id a eventos antiguos que no lo tengan
+            return parsed.map(event => ({
+                ...event,
+                id: event.id || generateId(),
+                date: new Date(event.date)
+            }));
+        } catch (error) {
+            console.error("No se pudieron leer los eventos guardados:", error);
+            return defaultEvents;
+        }
+    }
+
+    function saveEvents() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+    }
+
+    const events = loadEvents();
 
     // FORMATOS DE FECHA
     const monthFormatter = new Intl.DateTimeFormat("es-MX", { month: "long", year: "numeric" });
@@ -432,6 +720,75 @@
         return a.getFullYear() === b.getFullYear()
             && a.getMonth() === b.getMonth()
             && a.getDate() === b.getDate();
+    }
+
+    // Convierte un Date a "yyyy-mm-dd" para inputs type="date" (sin desfase de zona horaria)
+    function toDateInputValue(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
+
+    // AGREGAR EVENTO (usado por el modal y por el comando de Cidi)
+    function addEvent({ date, time, title, category }) {
+        events.push({
+            id: generateId(),
+            date,
+            time: time || "09:00",
+            title: title.trim(),
+            category: category && category.trim() ? category.trim() : "Personal"
+        });
+
+        events.sort((a, b) => a.date - b.date || a.time.localeCompare(b.time));
+
+        saveEvents();
+    }
+
+    // EDITAR EVENTO EXISTENTE (mantiene el mismo id)
+    function updateEvent(id, { date, time, title, category }) {
+        const target = events.find(event => event.id === id);
+
+        if (!target) return;
+
+        target.date = date;
+        target.time = time || "09:00";
+        target.title = title.trim();
+        target.category = category && category.trim() ? category.trim() : "Personal";
+
+        events.sort((a, b) => a.date - b.date || a.time.localeCompare(b.time));
+
+        saveEvents();
+    }
+
+    // BORRAR EVENTO
+    function deleteEvent(id) {
+        const index = events.findIndex(event => event.id === id);
+
+        if (index === -1) return;
+
+        events.splice(index, 1);
+
+        saveEvents();
+    }
+
+    // CONVERSIÓN DE HORA: 24h ("HH:MM") <-> 12h (hora, minuto, AM/PM)
+    function to12Hour(time24) {
+        const [hourStr, minuteStr] = time24.split(":");
+        let hour = parseInt(hourStr, 10);
+        const period = hour >= 12 ? "PM" : "AM";
+
+        hour = hour % 12;
+        if (hour === 0) hour = 12;
+
+        return { hour, minute: minuteStr, period };
+    }
+
+    function to24Hour(hour12, minute, period) {
+        let hour = parseInt(hour12, 10) % 12;
+        if (period === "PM") hour += 12;
+
+        return String(hour).padStart(2, "0") + ":" + minute;
     }
 
     // CREAR CALENDARIO
@@ -528,10 +885,54 @@
                     <strong>${event.title}</strong>
                     <span>${event.category}</span>
                 </div>
+                <div class="event-menu-wrapper">
+                    <button type="button" class="event-menu-button" aria-label="Opciones del evento">⋯</button>
+                    <div class="event-menu-dropdown">
+                        <button type="button" class="edit-option">Editar</button>
+                        <button type="button" class="delete-option">Eliminar</button>
+                    </div>
+                </div>
             `;
+
+            const menuButton = eventElement.querySelector(".event-menu-button");
+            const dropdown = eventElement.querySelector(".event-menu-dropdown");
+            const editButton = eventElement.querySelector(".edit-option");
+            const deleteButton = eventElement.querySelector(".delete-option");
+
+            menuButton.addEventListener("click", clickEvent => {
+                clickEvent.stopPropagation();
+                closeAllEventMenus();
+                dropdown.classList.add("open");
+            });
+
+            editButton.addEventListener("click", () => {
+                closeAllEventMenus();
+                openEditModal(event);
+            });
+
+            deleteButton.addEventListener("click", () => {
+                closeAllEventMenus();
+
+                const confirmed = confirm(`¿Eliminar el evento "${event.title}"? Esta acción no se puede deshacer.`);
+                if (!confirmed) return;
+
+                deleteEvent(event.id);
+                renderCalendar();
+                renderAgenda();
+            });
+
             eventsContainer.appendChild(eventElement);
         });
     }
+
+    // Cierra todos los menús de "⋯" abiertos (se usa antes de abrir otro, o al hacer click afuera)
+    function closeAllEventMenus() {
+        document.querySelectorAll(".event-menu-dropdown.open").forEach(dropdown => {
+            dropdown.classList.remove("open");
+        });
+    }
+
+    document.addEventListener("click", closeAllEventMenus);
 
     // CAMBIAR MES
     previousMonth.addEventListener("click", () => {
@@ -552,11 +953,212 @@
         renderAgenda();
     });
 
+    // MODAL: CREAR EVENTO
+    function openCreateModal(prefillDate) {
+        editingEventId = null;
+        eventForm.reset();
+
+        modalTitle.textContent = "Nuevo evento";
+        modalSubmitButton.textContent = "Guardar evento";
+
+        eventDateInput.value = toDateInputValue(prefillDate || selectedDate);
+        eventHourInput.value = "9";
+        eventMinuteInput.value = "00";
+        eventPeriodInput.value = "AM";
+
+        modalOverlay.classList.add("open");
+        eventTitleInput.focus();
+    }
+
+    // MODAL: EDITAR EVENTO EXISTENTE
+    function openEditModal(eventItem) {
+        editingEventId = eventItem.id;
+        eventForm.reset();
+
+        modalTitle.textContent = "Editar evento";
+        modalSubmitButton.textContent = "Guardar cambios";
+
+        eventTitleInput.value = eventItem.title;
+        eventCategoryInput.value = eventItem.category;
+        eventDateInput.value = toDateInputValue(eventItem.date);
+
+        const { hour, minute, period } = to12Hour(eventItem.time);
+        eventHourInput.value = hour;
+        eventMinuteInput.value = minute;
+        eventPeriodInput.value = period;
+
+        modalOverlay.classList.add("open");
+        eventTitleInput.focus();
+    }
+
+    function closeEventModal() {
+        modalOverlay.classList.remove("open");
+        editingEventId = null;
+    }
+
+    addEventButton.addEventListener("click", () => openCreateModal(selectedDate));
+    modalCloseButton.addEventListener("click", closeEventModal);
+    modalCancelButton.addEventListener("click", closeEventModal);
+
+    modalOverlay.addEventListener("click", event => {
+        if (event.target === modalOverlay) closeEventModal();
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && modalOverlay.classList.contains("open")) {
+            closeEventModal();
+        }
+    });
+
+    eventForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const [year, month, day] = eventDateInput.value.split("-").map(Number);
+        const date = new Date(year, month - 1, day);
+        const time = to24Hour(eventHourInput.value, eventMinuteInput.value, eventPeriodInput.value);
+
+        const eventData = {
+            date,
+            time,
+            title: eventTitleInput.value,
+            category: eventCategoryInput.value
+        };
+
+        if (editingEventId) {
+            updateEvent(editingEventId, eventData);
+        } else {
+            addEvent(eventData);
+        }
+
+        selectedDate = date;
+        currentMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+
+        closeEventModal();
+        renderCalendar();
+        renderAgenda();
+    });
+
+    // COMANDO: PARSEO DE LENGUAJE NATURAL SIMPLE
+    const weekdays = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+
+    function nextWeekday(from, targetIndex) {
+        const result = new Date(from);
+        const diff = (targetIndex - result.getDay() + 7) % 7 || 7;
+        result.setDate(result.getDate() + diff);
+        return result;
+    }
+
+    function extractDate(text) {
+        if (/\bhoy\b/i.test(text)) {
+            return { date: new Date(today), match: "hoy" };
+        }
+
+        if (/\bmañana\b/i.test(text)) {
+            const date = new Date(today);
+            date.setDate(date.getDate() + 1);
+            return { date, match: "mañana" };
+        }
+
+        for (let i = 0; i < weekdays.length; i++) {
+            const regex = new RegExp("\\b" + weekdays[i] + "\\b", "i");
+            if (regex.test(text)) {
+                return { date: nextWeekday(today, i), match: weekdays[i] };
+            }
+        }
+
+        return { date: new Date(today), match: null };
+    }
+
+    function buildTimeFromMatch(hourStr, minuteStr, suffixStr) {
+        let hour = parseInt(hourStr, 10);
+        const minutes = minuteStr || "00";
+        const suffix = (suffixStr || "").toLowerCase();
+
+        if (suffix.includes("pm") || suffix.includes("tarde") || suffix.includes("noche")) {
+            if (hour < 12) hour += 12;
+        } else if (suffix.includes("am") || suffix.includes("mañana")) {
+            if (hour === 12) hour = 0;
+        }
+
+        return String(hour).padStart(2, "0") + ":" + minutes;
+    }
+
+    function extractTime(text) {
+        let match = text.match(/a las\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm|de la tarde|de la ma[ñn]ana|de la noche)?/i);
+        if (match) {
+            return { time: buildTimeFromMatch(match[1], match[2], match[3]), match: match[0] };
+        }
+
+        match = text.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+        if (match) {
+            return { time: buildTimeFromMatch(match[1], match[2], match[3]), match: match[0] };
+        }
+
+        match = text.match(/(\d{1,2})\s*(am|pm)/i);
+        if (match) {
+            return { time: buildTimeFromMatch(match[1], "00", match[2]), match: match[0] };
+        }
+
+        return { time: "09:00", match: null };
+    }
+
+    function parseCommand(text) {
+        const dateResult = extractDate(text);
+        const timeResult = extractTime(text);
+
+        let title = text;
+
+        if (dateResult.match) {
+            title = title.replace(new RegExp("\\b" + dateResult.match + "\\b", "i"), "");
+        }
+
+        if (timeResult.match) {
+            title = title.replace(timeResult.match, "");
+        }
+
+        title = title.replace(/\ba las\b/i, "").replace(/\s{2,}/g, " ").trim();
+
+        if (title === "") title = "Nuevo evento";
+
+        return {
+            date: dateResult.date,
+            time: timeResult.time,
+            title,
+            category: "Cidi"
+        };
+    }
+
+    // COMANDO: FEEDBACK VISUAL (reemplaza el alert)
+    function showCommandFeedback(message) {
+        commandDescription.textContent = message;
+        commandDescription.style.color = "var(--emerald-dark)";
+        commandDescription.style.fontWeight = "700";
+
+        clearTimeout(showCommandFeedback._timeout);
+        showCommandFeedback._timeout = setTimeout(() => {
+            commandDescription.textContent = defaultCommandDescription;
+            commandDescription.style.color = "";
+            commandDescription.style.fontWeight = "";
+        }, 3000);
+    }
+
     // COMANDO
     function processCommand() {
         const command = commandInput.value.trim();
         if (command === "") return;
-        alert("Cidi recibió:\n\n" + command);
+
+        const parsed = parseCommand(command);
+
+        addEvent(parsed);
+
+        selectedDate = parsed.date;
+        currentMonth = new Date(parsed.date.getFullYear(), parsed.date.getMonth(), 1);
+
+        renderCalendar();
+        renderAgenda();
+
+        showCommandFeedback(`✓ Evento agregado: "${parsed.title}"`);
+
         commandInput.value = "";
     }
 
