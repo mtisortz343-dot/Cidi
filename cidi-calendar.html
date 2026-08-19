@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cidi Calendar</title>
+
+<style>
+    :root {
+        --background: #f3f7f5;
+        --card: #ffffff;
+        --text: #17201c;
+        --muted: #7b8580;
+        --border: #dfe8e3;
+        --emerald: #00a878;
+        --emerald-dark: #087f5b;
+        --lime: #b7e33e;
+        --turquoise: #21c7b7;
+        --soft-emerald: #e8f7f1;
+        --soft-lime: #f3f9df;
+        --shadow: 0 15px 40px rgba(20, 50, 40, 0.08);
+    }
+
+    /* GENERAL */
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at 85% 0%, rgba(183, 227, 62, 0.14), transparent 30%),
+            radial-gradient(circle at 0% 100%, rgba(33, 199, 183, 0.08), transparent 30%),
+            var(--background);
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    /* APP */
+    .app {
+        width: min(1200px, calc(100% - 40px));
+        margin: auto;
+        padding: 28px 0 70px;
+    }
+
+    /* TOP BAR */
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 80px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; }
+
+    .logo-icon {
+        width: 45px;
+        height: 45px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: var(--emerald);
+        color: white;
+        font-size: 21px;
+        font-weight: 800;
+        box-shadow: 0 8px 20px rgba(0, 168, 120, 0.25);
+    }
+
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-text strong { font-size: 17px; }
+    .logo-text span { color: var(--muted); font-size: 12px; }
+
+    .today-button {
+        padding: 9px 17px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: white;
+        color: var(--text);
+    }
+
+    .today-button:hover { border-color: var(--emerald); color: var(--emerald); }
+
+    /* WELCOME */
+    .welcome {
+        max-width: 850px;
+        margin: 0 auto 75px;
+        text-align: center;
+    }
+
+    .welcome-small {
+        margin: 0 0 12px;
+        color: var(--emerald);
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .welcome h1 {
+        margin: 0;
+        font-size: clamp(42px, 6vw, 70px);
+        line-height: 1.03;
+        letter-spacing: -3px;
+    }
+
+    .welcome h1 span { color: #313b36; }
+
+    /* COMMAND BAR */
+    .command-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 35px;
+        padding: 8px;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+    }
+
+    .command-container input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 14px 16px;
+        color: var(--text);
+    }
+
+    .command-container input::placeholder { color: #a1aaa5; }
+
+    .command-container button {
+        width: 45px;
+        height: 45px;
+        border: none;
+        border-radius: 13px;
+        background: var(--emerald);
+        color: white;
+        font-size: 22px;
+    }
+
+    .command-container button:hover { background: var(--emerald-dark); }
+
+    .command-description { margin-top: 11px; color: var(--muted); font-size: 12px; }
+
+    /* DASHBOARD */
+    .dashboard {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.8fr);
+        gap: 20px;
+    }
+
+    /* CARDS */
+    .calendar-card, .agenda-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+    }
+
+    /* CALENDAR */
+    .calendar-card { padding: 26px; }
+
+    .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+
+    .calendar-header p, .agenda-header p {
+        margin: 0 0 4px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .calendar-header h2, .agenda-header h2 { margin: 0; font-size: 22px; }
+
+    .calendar-header button {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: white;
+        font-size: 24px;
+    }
+
+    .calendar-header button:hover { border-color: var(--emerald); color: var(--emerald); }
+
+    /* WEEKDAYS */
+    .weekdays, .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+
+    .weekdays { margin-bottom: 8px; }
+
+    .weekdays span {
+        text-align: center;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    /* DAYS */
+    .calendar-grid { gap: 5px; }
+
+    .day {
+        min-height: 105px;
+        padding: 9px;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        background: #fafcfb;
+        transition: 0.15s;
+    }
+
+    .day:hover { border-color: var(--border); background: white; }
+
+    .day-number {
+        display: grid;
+        place-items: center;
+        width: 29px;
+        height: 29px;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .day.today .day-number { background: var(--emerald); color: white; }
+
+    .day.selected {
+        border-color: var(--emerald);
+        background: var(--soft-emerald);
+    }
+
+    .day.other-month { opacity: 0.35; }
+
+    /* EVENT MARKERS */
+    .event-marker {
+        display: block;
+        margin-top: 9px;
+        padding: 5px 7px;
+        overflow: hidden;
+        border-radius: 7px;
+        background: rgba(33, 199, 183, 0.13);
+        color: #087f75;
+        font-size: 9px;
+        font-weight: 700;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* AGENDA */
+    .agenda-card { padding: 26px; }
+
+    .agenda-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .status-dot {
+        width: 11px;
+        height: 11px;
+        margin-top: 5px;
+        border-radius: 50%;
+        background: var(--lime);
+        box-shadow: 0 0 0 5px rgba(183, 227, 62, 0.15);
+    }
+
+    /* EVENTS */
+    .events { display: grid; gap: 10px; margin-top: 25px; }
+
+    .event {
+        display: grid;
+        grid-template-columns: 45px 4px 1fr;
+        align-items: center;
+        gap: 10px;
+        padding: 13px;
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        background: #fafcfb;
+    }
+
+    .event-time { color: var(--emerald); font-size: 11px; font-weight: 800; }
+
+    .event-color {
+        width: 4px;
+        height: 35px;
+        border-radius: 4px;
+        background: var(--turquoise);
+    }
+
+    .event-info { display: flex; flex-direction: column; gap: 3px; }
+    .event-info strong { font-size: 13px; }
+    .event-info span { color: var(--muted); font-size: 11px; }
+
+    /* ADD EVENT */
+    .add-event {
+        width: 100%;
+        margin-top: 20px;
+        padding: 12px;
+        border: 1px dashed var(--emerald);
+        border-radius: 12px;
+        background: var(--soft-emerald);
+        color: var(--emerald-dark);
+        font-weight: 700;
+    }
+
+    .add-event:hover { background: #d8f2e8; }
+
+    /* MOBILE */
+    @media (max-width: 800px) {
+        .app { width: calc(100% - 20px); }
+        .topbar { margin-bottom: 50px; }
+        .dashboard { grid-template-columns: 1fr; }
+        .day { min-height: 75px; padding: 5px; }
+    }
+
+    @media (max-width: 500px) {
+        .welcome h1 { letter-spacing: -1.5px; }
+        .calendar-card, .agenda-card { padding: 15px; }
+        .day { min-height: 65px; }
+    }
+</style>
+</head>
+
+<body>
+<div class="app">
+
+    <!-- BARRA SUPERIOR -->
+    <header class="topbar">
+        <div class="logo">
+            <div class="logo-icon">C</div>
+            <div class="logo-text">
+                <strong>Cidi</strong>
+                <span>Calendar</span>
+            </div>
+        </div>
+        <button class="today-button" id="todayButton">Hoy</button>
+    </header>
+
+    <!-- BIENVENIDA -->
+    <section class="welcome">
+        <p class="welcome-small">Bienvenido de nuevo, Math</p>
+        <h1>Hola Math, <br><span>¿Cuál es el plan para hoy?</span></h1>
+
+        <div class="command-container">
+            <input id="commandInput" type="text" placeholder="Escribe algo para Cidi...">
+            <button id="commandButton">→</button>
+        </div>
+
+        <p class="command-description">Escribe tareas, eventos o preguntas.</p>
+    </section>
+
+    <!-- CALENDARIO + AGENDA -->
+    <main class="dashboard">
+
+        <!-- CALENDARIO -->
+        <section class="calendar-card">
+            <div class="calendar-header">
+                <button id="previousMonth">‹</button>
+                <div>
+                    <p>Calendario</p>
+                    <h2 id="monthTitle"></h2>
+                </div>
+                <button id="nextMonth">›</button>
+            </div>
+
+            <div class="weekdays">
+                <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span>
+                <span>Vie</span><span>Sáb</span><span>Dom</span>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </section>
+
+        <!-- AGENDA -->
+        <aside class="agenda-card">
+            <div class="agenda-header">
+                <div>
+                    <p>Agenda</p>
+                    <h2 id="agendaDate"></h2>
+                </div>
+                <div class="status-dot"></div>
+            </div>
+
+            <div class="events" id="eventsContainer"></div>
+
+            <button class="add-event" id="addEventButton">+ Agregar evento</button>
+        </aside>
+
+    </main>
+</div>
+
+<script>
+    // ELEMENTOS
+    const calendarGrid = document.getElementById("calendarGrid");
+    const monthTitle = document.getElementById("monthTitle");
+    const agendaDate = document.getElementById("agendaDate");
+    const eventsContainer = document.getElementById("eventsContainer");
+    const previousMonth = document.getElementById("previousMonth");
+    const nextMonth = document.getElementById("nextMonth");
+    const todayButton = document.getElementById("todayButton");
+    const commandInput = document.getElementById("commandInput");
+    const commandButton = document.getElementById("commandButton");
+
+    // FECHA ACTUAL
+    const today = new Date();
+    let currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    let selectedDate = new Date(today);
+
+    // EVENTOS DE PRUEBA
+    const events = [
+        {
+            date: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+            time: "18:00",
+            title: "Diseñar Cidi Calendar",
+            category: "Proyecto personal"
+        }
+    ];
+
+    // FORMATOS DE FECHA
+    const monthFormatter = new Intl.DateTimeFormat("es-MX", { month: "long", year: "numeric" });
+    const dateFormatter = new Intl.DateTimeFormat("es-MX", { weekday: "long", day: "numeric", month: "long" });
+
+    // COMPARAR FECHAS
+    function sameDate(a, b) {
+        return a.getFullYear() === b.getFullYear()
+            && a.getMonth() === b.getMonth()
+            && a.getDate() === b.getDate();
+    }
+
+    // CREAR CALENDARIO
+    function renderCalendar() {
+        calendarGrid.innerHTML = "";
+
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+
+        let monthName = monthFormatter.format(currentMonth);
+        monthTitle.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const offset = firstDay === 0 ? 6 : firstDay - 1;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const previousMonthDays = new Date(year, month, 0).getDate();
+
+        // Generamos 42 celdas
+        for (let i = 0; i < 42; i++) {
+            const dayElement = document.createElement("div");
+            dayElement.className = "day";
+
+            let date;
+
+            if (i < offset) {
+                // Mes anterior
+                const day = previousMonthDays - offset + i + 1;
+                date = new Date(year, month - 1, day);
+                dayElement.classList.add("other-month");
+            } else if (i < offset + daysInMonth) {
+                // Mes actual
+                const day = i - offset + 1;
+                date = new Date(year, month, day);
+            } else {
+                // Mes siguiente
+                const day = i - offset - daysInMonth + 1;
+                date = new Date(year, month + 1, day);
+                dayElement.classList.add("other-month");
+            }
+
+            if (sameDate(date, today)) dayElement.classList.add("today");
+            if (sameDate(date, selectedDate)) dayElement.classList.add("selected");
+
+            const number = document.createElement("span");
+            number.className = "day-number";
+            number.textContent = date.getDate();
+            dayElement.appendChild(number);
+
+            const dayEvents = events.filter(event => sameDate(event.date, date));
+
+            dayEvents.slice(0, 2).forEach(event => {
+                const marker = document.createElement("span");
+                marker.className = "event-marker";
+                marker.textContent = event.time + " · " + event.title;
+                dayElement.appendChild(marker);
+            });
+
+            dayElement.addEventListener("click", () => {
+                selectedDate = new Date(date);
+                renderCalendar();
+                renderAgenda();
+            });
+
+            calendarGrid.appendChild(dayElement);
+        }
+    }
+
+    // AGENDA
+    function renderAgenda() {
+        let formatted = dateFormatter.format(selectedDate);
+        formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        agendaDate.textContent = formatted;
+
+        eventsContainer.innerHTML = "";
+
+        const selectedEvents = events.filter(event => sameDate(event.date, selectedDate));
+
+        if (selectedEvents.length === 0) {
+            eventsContainer.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #7b8580; font-size: 13px;">
+                    No hay eventos para este día.
+                </div>
+            `;
+            return;
+        }
+
+        selectedEvents.forEach(event => {
+            const eventElement = document.createElement("article");
+            eventElement.className = "event";
+            eventElement.innerHTML = `
+                <div class="event-time">${event.time}</div>
+                <div class="event-color"></div>
+                <div class="event-info">
+                    <strong>${event.title}</strong>
+                    <span>${event.category}</span>
+                </div>
+            `;
+            eventsContainer.appendChild(eventElement);
+        });
+    }
+
+    // CAMBIAR MES
+    previousMonth.addEventListener("click", () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+        renderCalendar();
+    });
+
+    nextMonth.addEventListener("click", () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+        renderCalendar();
+    });
+
+    // BOTÓN HOY
+    todayButton.addEventListener("click", () => {
+        currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedDate = new Date(today);
+        renderCalendar();
+        renderAgenda();
+    });
+
+    // COMANDO
+    function processCommand() {
+        const command = commandInput.value.trim();
+        if (command === "") return;
+        alert("Cidi recibió:\n\n" + command);
+        commandInput.value = "";
+    }
+
+    commandButton.addEventListener("click", processCommand);
+
+    commandInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") processCommand();
+    });
+
+    // INICIAR CIDI
+    renderCalendar();
+    renderAgenda();
+</script>
+
+</body>
+</html>
